@@ -30,8 +30,9 @@ library(dplyr)
 ## Load Datasets 
 ```{r}
 # Code to run at the beginning
-breweries <- read.csv('C:/Users/anish/OneDrive/Desktop/Doing Data Science/Unit 8/Breweries.csv',header=TRUE)
-beers <- read.csv("C:/Users/anish/OneDrive/Desktop/Doing Data Science/Unit 8/Beers.csv",header=TRUE)
+breweries <- read.csv("https://raw.githubusercontent.com/BivinSadler/MSDS_6306_Doing-Data-Science/Master/Unit%208%20and%209%20Case%20Study%201/Breweries.csv",header=TRUE)
+beers <- read.csv("https://raw.githubusercontent.com/BivinSadler/MSDS_6306_Doing-Data-Science/Master/Unit%208%20and%209%20Case%20Study%201/Beers.csv",header=TRUE)
+
 
 ```
 
