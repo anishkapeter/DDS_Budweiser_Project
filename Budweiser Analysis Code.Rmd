@@ -146,7 +146,7 @@ missing_style$Style[missing_style$Beer_ID == 2527] <- "Märzen / Oktoberfest"
 missing_style$Style[missing_style$Beer_ID == 1635] <- "Scottish Ale"
 missing_style <- missing_style[missing_style$Beer_ID != 1796,] # It looks like The CROWLER™ is a container, not a beer
 missing_style <- missing_style[missing_style$Beer_ID != 1790,] # It looks like CAN'D AID Foundation is a charity, not a beer
-beers_and_breweries <- rbind(no_missing_style,missing_style) # 2407
+beers_and_breweries <- rbind(no_missing_style,missing_style) # 2356
 # Merged data frame with filled in Styles but still missing ABV and IBU
 head(beers_and_breweries)
 tail(beers_and_breweries)
@@ -483,7 +483,7 @@ missing_abv <- merge(missing_abv,med_abv_per_style,by="Style")
 missing_abv$ABV <- missing_abv$med
 head(missing_abv)
 missing_abv$med <- NULL
-beers_and_breweries <- rbind(missing_abv,non_missing_abv) # 2408
+beers_and_breweries <- rbind(missing_abv,non_missing_abv) # 2356
 head(beers_and_breweries)
 ```
 
@@ -715,10 +715,11 @@ Ale_Styles <- Ale_Styles[Ale_Styles != "Other"] # Can be either
 beers_and_breweries[beers_and_breweries$Style == "Chile Beer",] # beer with chilis
 Ale_Styles <- Ale_Styles[Ale_Styles != "Chile Beer"] # Can be either
 Ale_Styles <- Ale_Styles[Ale_Styles != "Fruit / Vegetable Beer"] # Can be either
+Ale_Styles <- Ale_Styles[Ale_Styles != "Baltic Porter"] # Even though porters are Ales, a Baltic Porter is a Lager, good catch by Chat GPT
 unique(beers_and_breweries$Style[grepl("stout",beers_and_breweries$Style,ignore.case = T)]) # Seems stouts are missing
 Ale_Styles <- c(Ale_Styles, "Milk / Sweet Stout", "Russian Imperial Stout", "American Stout", "Foreign / Export Stout",
                 "Oatmeal Stout", "Irish Dry Stout", "American Double / Imperial Stout", "English Stout")
-Ale_Styles <- c(Ale_Styles, "Dubbel", "Tripel", "Flanders Oud Bruin", "Baltic Porter", "Kristalweizen",
+Ale_Styles <- c(Ale_Styles, "Dubbel", "Tripel", "Flanders Oud Bruin", "Kristalweizen",
                 "Berliner Weissbier", "Bière de Garde", "Dunkelweizen", "Grisette", "Roggenbier")
 Ale_Styles <- Ale_Styles[Ale_Styles != "Rye Beer"] # Can be either
 Ale_Styles <- Ale_Styles[Ale_Styles != "American Pilsner"] # pilsners are lagers
@@ -728,6 +729,13 @@ Ale_Beers <- beers_and_breweries[beers_and_breweries$Style %in% Ale_Styles |
 IPA_Beers$IPA_or_Ale <- "IPA"
 Ale_Beers$IPA_or_Ale <- "Ale"
 IPAs_and_Ales <- rbind(IPA_Beers,Ale_Beers)
+
+# The above approach was pretty manual.
+# Is it possible to pass in a list of styles to ChatGPT and have it give you list of IPAs, Ales, neither, sometimes an Ale and sometimes neither.
+all_styles <- beers_and_breweries %>%
+  group_by(Style) %>%
+  summarize(Count=n())
+# Conversation is saved as a .txt file
 
 ```
 
@@ -750,6 +758,19 @@ medians_by_style %>% # R^2 jumps up when you remove styles without much represen
   geom_smooth(method='lm') +
   stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
                formula = y ~ x, parse = TRUE)
+
+# What about all the data for the most popular styles (not just the medians), is there a high correlation?
+style_counts <- beers_and_breweries %>%
+  group_by(Style) %>%
+  summarize(Count = n())
+popular_styles <- style_counts$Style[style_counts$Count > 100]
+beers_and_breweries_original %>% filter(Style %in% popular_styles) %>% # R^2 is 0.58, not super high
+  ggplot(aes(x=ABV,y=IBU))+
+  geom_point()+
+  geom_smooth(method='lm') +
+  stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               formula = y ~ x, parse = TRUE)
+
 
 # Use plotly to look at the bottom right hand part of ABV vs IBU plot
 summary(beers_and_breweries$ABV) # Median = 0.056, 3rd Quartile = 0.067
