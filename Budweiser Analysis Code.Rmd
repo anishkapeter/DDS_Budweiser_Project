@@ -128,6 +128,7 @@ ggplot(count_df,aes(x=Category, y=Percent)) +
   geom_bar(stat="identity",width=.5,position = "Dodge",fill = "#c8102e",color = "#13294b" ) + 
   xlab("Variable")  + 
   ylab("Percent Missing") +
+  ggtitle("Percentage of Oberservations Missing By Variable")+
   geom_text(aes(label = Percent), vjust = -1) + 
   ylim(0,40) +
   theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(color = "#13294b",size = 14),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
@@ -262,9 +263,6 @@ beers_and_breweries_original %>% filter(Style %in% popular_styles) %>%
 
 
 ```
-
-
-
 
 
 ### Missing IBU 
@@ -625,10 +623,13 @@ summary(beers_and_breweries$ABV)
 #    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 # 0.02700 0.05000 0.05600 0.05973 0.06700 0.12800 
 
+# Density Plot for Overall ABV
 ggplot(beers_and_breweries,aes(x = ABV)) + 
   geom_density(fill = "#c8102e", color = "#13294b") +
   ggtitle("Density of ABV") + 
   theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, color = "#13294b",size = 14),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
+
+
 # Plotting the densities for the top 5 most popular beer styles
 style_counts <- beers_and_breweries %>%
   group_by(Style) %>%
@@ -650,6 +651,21 @@ ggplot(beers_and_breweries[beers_and_breweries$State %in% popular_states,],aes(x
   ggtitle("Density of ABV") + 
   facet_wrap(~State,ncol=1) +
   theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, color = "#13294b",size = 14),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
+
+
+# ABV Box Plot 
+ggplot(beers_and_breweries,aes(x = ABV)) + 
+  geom_boxplot(fill = "#c8102e", color = "#13294b") +
+  ggtitle("Boxplot of ABV") + 
+  coord_flip()+
+  theme(plot.background = element_rect("#dbdfdf"),
+        axis.text.x = element_blank(),
+        axis.text.y = element_text(color = "#13294b",size = 14), 
+        axis.title.x = element_text(color = "#13294b",size = 16), 
+        axis.title.y =element_text(color = "#13294b",size = 16), 
+        plot.title  = element_text(color = "#13294b",size = 18),
+        axis.ticks.x = element_blank())
+
 
 min_abv <- beers_and_breweries[beers_and_breweries$ABV == min(beers_and_breweries$ABV),]
 # American IPA        174 Bikini Beer    1286 0.027  41     12 Evil Twin Brewing Brooklyn    NY
@@ -680,6 +696,8 @@ third_quartile_style <- median_abv_by_style %>% # Belgian Dark Ale 0.067
   filter(Median > 0.067 - 0.001 & Median < 0.067 + 0.001)
 high_abv_style <- median_abv_by_style %>% # Barleywine 0.099, Belgian Strong 0.08
   filter(Median > 0.067 + 0.01)
+
+
 
 ```
 
