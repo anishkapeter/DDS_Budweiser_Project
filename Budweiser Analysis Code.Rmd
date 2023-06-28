@@ -63,7 +63,8 @@ breweries_by_state %>%
 
 
 ## Question 2 Merge Data Together
-## Merge Beers and Breweries 
+
+### Merge Beers and Breweries 
 ```{r}
 # 2.	Merge beer data with the breweries data. 
 # Print the first 6 observations and the last six observations to check the merged file. 
@@ -107,6 +108,8 @@ non_beer_counts <- non_beers %>%
   summarise(Count=n())
 
 ```
+
+
 
 ## Question 3: Address Missing Values  
 ```{r}
@@ -254,7 +257,7 @@ beers_and_breweries_original %>% filter(Style %in% popular_styles) %>%
   theme(plot.background = element_rect("#dbdfdf"),
         axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 10),
         axis.text.y = element_blank(), 
-        axis.title.x = element_blank(), 
+        axis.title.x = element_text(color = "#13294b",size = 10), 
         axis.title.y =element_text(color = "#13294b",size = 16), 
         plot.title  = element_text(color = "#13294b",size = 18),
         axis.ticks.y= element_blank()) +
@@ -420,13 +423,14 @@ beers_and_breweries %>% filter(Style %in% popular_styles) %>%
   theme(plot.background = element_rect("#dbdfdf"),
         axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 10),
         axis.text.y = element_blank(), 
-        axis.title.x = element_blank(), 
+        axis.title.x = element_text(color = "#13294b",size = 10), 
         axis.title.y =element_text(color = "#13294b",size = 16), 
         plot.title  = element_text(color = "#13294b",size = 18),
         axis.ticks.y = element_blank(),
         legend.text = element_text(size=10),
         legend.title = element_text(size=10)) +
-        scale_fill_manual(values = colors)
+        scale_fill_manual(values = colors) +
+  guides(fill = guide_legend(reverse=TRUE))
 
 
 ```
@@ -720,7 +724,7 @@ beers_and_breweries %>% ggplot(aes(x = ABV, y = IBU)) +
 $$IBU = -23.1 + 1.07*10^3ABV$$
 $$R^2 = 0.35$$ 
 
-## Question 8 
+## Question 8: KNN Classification Ales vs IPA 
 
 ### Organize IPA vs Ale  
 ```{r}
@@ -760,16 +764,141 @@ Ale_Beers <- beers_and_breweries[beers_and_breweries$Style %in% Ale_Styles |
                                       !(beers_and_breweries$Style %in% IPA_Styles)),] # 1243
 IPA_Beers$IPA_or_Ale <- "IPA"
 Ale_Beers$IPA_or_Ale <- "Ale"
+
+# Dataframe With IPA vs Ale Distinction 
 IPAs_and_Ales <- rbind(IPA_Beers,Ale_Beers)
+
 
 # The above approach was pretty manual.
 # Is it possible to pass in a list of styles to ChatGPT and have it give you list of IPAs, Ales, neither, sometimes an Ale and sometimes neither.
 all_styles <- beers_and_breweries %>%
   group_by(Style) %>%
   summarize(Count=n())
+all_styles
 # Conversation is saved as a .txt file
+```
+
+### Plots of ABV and IBU by Classification 
+```{r}
+# Check if any overlaps, there shouldn't be
+merge(IPA_Beers,Ale_Beers,by="Beer_ID") # 0 rows
+
+colors = c("#c8102e","#13294b")
+
+# ABV vs IBU by Classification Scatterplot
+IPAs_and_Ales %>% # Looks like IPAs have higher IBUs
+  ggplot(aes(x=ABV,y=IBU,fill=IPA_or_Ale)) +
+  geom_point(color = "BLACK", pch = 21, size = 3, position = "jitter") + 
+  ggtitle('ABV vs IBU by Classification') + 
+  theme(plot.background = element_rect("#dbdfdf"),
+        axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 10),
+        axis.text.y = element_text(color = "#13294b",size = 14), 
+        axis.title.x = element_text(color = "#13294b",size = 16), 
+        axis.title.y =element_text(color = "#13294b",size = 16), 
+        plot.title  = element_text(color = "#13294b",size = 18),
+        legend.text = element_text(color = "#13294b",size=15),
+        legend.title = element_text(color = "#13294b",size=15)) + 
+  scale_fill_manual(values = colors, name = "Classification")  
+
+  
+
+# ABV by Classification Boxplot
+IPAs_and_Ales %>% # Looks like IPAs have higher ABV as well
+  ggplot(aes(x=ABV)) +
+  geom_boxplot() +
+  facet_wrap(~IPA_or_Ale,ncol=1)
+
+# IBU by Classification Boxplot
+IPAs_and_Ales %>% 
+  ggplot(aes(x=IBU)) +
+  geom_boxplot() +
+  facet_wrap(~IPA_or_Ale,ncol=1)
+```
+
+
+### KNN Predictor
+```{r}
+# First, try with just K = 5 for 100 train and test splits 70 30 split
+num_seeds <- 100
+accuracies <- numeric(num_seeds)
+sensitivies <- numeric(num_seeds)
+specificities <- numeric(num_seeds)
+
+for (seed in 1:100){
+  set.seed(seed)
+  trainIndices = sample(seq(1:length(IPAs_and_Ales$IPA_or_Ale)),round(.7*length(IPAs_and_Ales$IPA_or_Ale)))
+  train = IPAs_and_Ales[trainIndices,]
+  test = IPAs_and_Ales[-trainIndices,]
+  classifications = knn(train[,c("ABV","IBU")],
+                                test[,c("ABV","IBU")],
+                                train$IPA_or_Ale, prob = TRUE, k = 5)
+  CM = confusionMatrix(table(test$IPA_or_Ale,classifications))
+  accuracies[seed] = CM$overall[1]
+  sensitivies[seed] = CM$byClass[1]
+  specificities[seed] = CM$byClass[2]
+}
+boxplot(accuracies) # min is ~85 and max ~93, which is really good
+accuracies
+
+# Accuracy histogram for all the Test Train Splits 
+ggplot(data.frame(accuracies), aes(x = accuracies)) + 
+  geom_histogram(fill = "#c8102e", color = "#13294b") +
+  xlab("Accuracy") +
+  ylab("Count")+
+  ggtitle("Accuracies of KNN Classifier on Test Data") + 
+  theme(plot.background = element_rect("#dbdfdf"),
+        axis.text.x = element_text(color = "#13294b",size = 10),
+        axis.text.y = element_text(color = "#13294b",size = 14), 
+        axis.title.x = element_text(color = "#13294b",size = 16), 
+        axis.title.y =element_text(color = "#13294b",size = 16), 
+        plot.title  = element_text(color = "#13294b",size = 18))+
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 20))
+
+hist(accuracies)
+min(accuracies) # 86.3%, really good minimum accuracy
+max(accuracies) # 92.1%
+boxplot(sensitivies) 
+hist(sensitivies)
+
+# Sensitivies histogram for all the Test Train Splits 
+ggplot(data.frame(sensitivies), aes(x = sensitivies)) + 
+  geom_histogram(fill = "#c8102e", color = "#13294b") +
+  xlab("Sensitivity") +
+  ylab("Count")+
+  ggtitle("Sensitivities of KNN Classifier on Test Data") + 
+  theme(plot.background = element_rect("#dbdfdf"),
+        axis.text.x = element_text(color = "#13294b",size = 10),
+        axis.text.y = element_text(color = "#13294b",size = 14), 
+        axis.title.x = element_text(color = "#13294b",size = 16), 
+        axis.title.y =element_text(color = "#13294b",size = 16), 
+        plot.title  = element_text(color = "#13294b",size = 18))+
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 20))
+
+
+min(sensitivies) # 89.2%, really good minimum accuracy
+max(sensitivies) # 95.1%
+boxplot(specificities) 
+hist(specificities)
+
+# Specificities histogram for all the Test Train Splits 
+ggplot(data.frame(specificities), aes(x = specificities)) + 
+  geom_histogram(fill = "#c8102e", color = "#13294b") +
+  xlab("Specificity") +
+  ylab("Count")+
+  ggtitle("Specificities of KNN Classifier on Test Data") + 
+  theme(plot.background = element_rect("#dbdfdf"),
+        axis.text.x = element_text(color = "#13294b",size = 10),
+        axis.text.y = element_text(color = "#13294b",size = 14), 
+        axis.title.x = element_text(color = "#13294b",size = 16), 
+        axis.title.y =element_text(color = "#13294b",size = 16), 
+        plot.title  = element_text(color = "#13294b",size = 18))+
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 15))
+
+min(specificities) # 79.7%, not as good, but still not bad
+max(specificities) # 90.6%
 
 ```
+
 
 ## Question 9: Other Investigation
 ```{r}
