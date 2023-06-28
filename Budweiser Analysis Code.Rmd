@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
+
 ## Load Packages 
 ```{r}
 # packages
@@ -32,7 +33,6 @@ library(dplyr)
 # Code to run at the beginning
 breweries <- read.csv("https://raw.githubusercontent.com/BivinSadler/MSDS_6306_Doing-Data-Science/Master/Unit%208%20and%209%20Case%20Study%201/Breweries.csv",header=TRUE)
 beers <- read.csv("https://raw.githubusercontent.com/BivinSadler/MSDS_6306_Doing-Data-Science/Master/Unit%208%20and%209%20Case%20Study%201/Beers.csv",header=TRUE)
-
 
 ```
 
@@ -115,21 +115,22 @@ dim(beers_and_breweries %>% filter(Style==''))[1] # 5 results, 2 with ABV and IB
 dim(beers_and_breweries %>% filter(is.na(ABV) & is.na(IBU)))[1] # 62 results / 2359 = 2.6%
 dim(beers_and_breweries %>% filter(!is.na(ABV) & is.na(IBU)))[1] # 895 results / 2359 = 37.9%
 
-# Plot a single bar with counts
-Count <- c(5, 62, 895, 1397)
-Category <- c("Missing Style", "Missing ABV", "Missing IBU", "No Missing Values")
+# Plot a single bar with missing counts and percentages
+
+Count <- c(5, 62, 895)
+Category <- c("Style", "ABV", "IBU")
 count_df <- data.frame(Count, Category)
 count_df$Percent <- round(count_df$Count / 2359 *100,1)
-count_df$Category <- factor(count_df$Category,level=c("No Missing Values", "Missing IBU", "Missing ABV", "Missing Style" ))
+count_df$Category <- factor(count_df$Category,level=c("IBU", "ABV", "Style" ))
 summary(count_df)
-ggplot(count_df,aes(x=1, y=Count, fill=Category)) +
-  geom_bar(stat="identity",width=.5) + xlab('') +ylab('')+xlim(c(0.7,1.7)) +
-  theme(axis.text.x = element_blank()) +
-  geom_text(x=1.5,y=0,label="Missing Style = 0.2%",size=3)+
-  geom_text(x=1.5,y=100,label="Missing ABV = 2.6%",size=3)+
-  geom_text(x=1.5,y=500,label="Missing IBU = 37.9%",size=3)+
-  geom_text(x=1.5,y=1500,label="No Missing Values = 59.2%",size=3)
 
+ggplot(count_df,aes(x=Category, y=Percent)) +
+  geom_bar(stat="identity",width=.5,position = "Dodge",fill = "#c8102e",color = "#13294b" ) + 
+  xlab("Variable")  + 
+  ylab("Percent Missing") +
+  geom_text(aes(label = Percent), vjust = -1) + 
+  ylim(0,40) +
+  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(color = "#13294b",size = 14),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
 
 ```
 
@@ -220,7 +221,15 @@ ggplot(state_missing_abv_comparison,aes(x = State,y = per_missing)) +
   theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 14),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
 
 
-
+# Filtering on the highest counts of styles, then plot to see if they have clear separation for ABV and IBU
+style_counts <- beers_and_breweries %>%
+  group_by(Style) %>%
+  summarize(Count = n())
+popular_styles <- style_counts$Style[style_counts$Count > 100]
+medians_by_popular_style <- beers_and_breweries %>%
+  filter(Style %in% popular_styles) %>%
+  group_by(Style) %>%
+  summarize(median_abv=median(ABV),median_ibu=median(IBU))
 
 ### ABV is Highly Based on Style 
 
@@ -240,14 +249,16 @@ beers_and_breweries_original %>% filter(Style %in% popular_styles) %>%
 # Popular Styles colored by ABV, Boxplot
 beers_and_breweries_original %>% filter(Style %in% popular_styles) %>%
   ggplot(aes(x=ABV,fill=Style)) +
-  geom_boxplot(color="black") + ggtitle('ABV for Popular Styles') + 
+  geom_boxplot(color="black") + ggtitle('ABV of Popular Styles') + 
   theme(plot.background = element_rect("#dbdfdf"),
         axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 10),
-        axis.text.y = element_text(color = "#13294b",size = 14), 
-        axis.title.x = element_text(color = "#13294b",size = 16), 
+        axis.text.y = element_blank(), 
+        axis.title.x = element_blank(), 
         axis.title.y =element_text(color = "#13294b",size = 16), 
-        plot.title  = element_text(color = "#13294b",size = 18)) +
+        plot.title  = element_text(color = "#13294b",size = 18),
+        axis.ticks.y= element_blank()) +
         scale_fill_manual(values = colors)
+
 
 
 ```
@@ -378,6 +389,7 @@ beers_and_breweries %>% filter(Style %in% popular_styles) %>%
         legend.text = element_text(size=15),
         legend.title = element_text(size=15))+
         scale_fill_manual(values = colors)
+ 
 
 t.test(beers_and_breweries$ABV[beers_and_breweries$Style=='American Blonde Ale'],
        beers_and_breweries$ABV[beers_and_breweries$Style=='American Amber / Red Ale'])
@@ -392,7 +404,7 @@ t.test(beers_and_breweries$IBU[beers_and_breweries$Style=='American Pale Ale (AP
 ### IBU is Highly Based on Style 
 
 # Popular Styles colored by IBU, Histogram
-Beers_and_breweries %>% filter(Style %in% popular_styles) %>%
+beers_and_breweries %>% filter(Style %in% popular_styles) %>%
   ggplot(aes(x=ABV,fill=Style)) + ylab('Count') +
   geom_histogram(color="black") + ggtitle('ABV for Popular Styles') + 
   theme(plot.background = element_rect("#dbdfdf"),
@@ -404,18 +416,20 @@ Beers_and_breweries %>% filter(Style %in% popular_styles) %>%
 
 
 # Popular Styles colored by IBU, Boxplot
-Beers_and_breweries %>% filter(Style %in% popular_styles) %>%
+beers_and_breweries %>% filter(Style %in% popular_styles) %>%
   ggplot(aes(x=IBU,fill=Style)) +
   geom_boxplot(color="black") + ggtitle('IBU for Popular Styles') + 
   theme(plot.background = element_rect("#dbdfdf"),
         axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 10),
-        axis.text.y = element_text(color = "#13294b",size = 14), 
-        axis.title.x = element_text(color = "#13294b",size = 16), 
+        axis.text.y = element_blank(), 
+        axis.title.x = element_blank(), 
         axis.title.y =element_text(color = "#13294b",size = 16), 
         plot.title  = element_text(color = "#13294b",size = 18),
+        axis.ticks.y = element_blank(),
         legend.text = element_text(size=10),
         legend.title = element_text(size=10)) +
         scale_fill_manual(values = colors)
+
 
 ```
 
@@ -620,7 +634,7 @@ style_counts <- beers_and_breweries %>%
   group_by(Style) %>%
   summarize(Count = n())
 popular_styles <- style_counts$Style[style_counts$Count > 100]
-ggplot(beers_and_breweries[beers_and_breweries$Style==popular_styles,],aes(x = ABV)) + 
+ggplot(beers_and_breweries[beers_and_breweries$Style %in% popular_styles,],aes(x = ABV)) + 
   geom_density(fill = "#c8102e", color = "#13294b") +
   ggtitle("Density of ABV") + 
   facet_wrap(~Style,ncol=1) +
@@ -631,7 +645,7 @@ state_counts <- beers_and_breweries %>%
   group_by(State) %>%
   summarize(Count = n())
 popular_states <- state_counts$State[state_counts$Count > 125]
-ggplot(beers_and_breweries[beers_and_breweries$State==popular_states,],aes(x = ABV)) + 
+ggplot(beers_and_breweries[beers_and_breweries$State %in% popular_states,],aes(x = ABV)) + 
   geom_density(fill = "#c8102e", color = "#13294b") +
   ggtitle("Density of ABV") + 
   facet_wrap(~State,ncol=1) +
