@@ -37,7 +37,7 @@ beers <- read.csv("https://raw.githubusercontent.com/BivinSadler/MSDS_6306_Doing
 ```
 
 
-##  Question 1: Breweries by State 
+## Question 1: Breweries by State 
 ```{r}
 head(breweries)
 dim(breweries) # 558 4
@@ -60,6 +60,9 @@ breweries_by_state %>%
   theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, color = "#13294b",size = 14),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
 
 ```
+How many breweries are present in each state? 
+
+DC, North Dakota, South Dakota, and West Virginia have 1 brewery, Arkansas, Delaware, Massachusetts, and Nevada have 2 breweries, Alabama, Kansas, New Hampshire, New Jersey, and Tennessee have 3 breweries, Hawaii, Kentucky, Utah, New Mexico, South Carolina, and Wyoming have 4 breweries, Iowa, Idaho, Louisiana, Nebraska, and Rhode Island have 5 breweries, Oklahoma has 6 breweries, Alaska, Georgia, and Maryland have 7 breweries, Connecticut has 8 breweries, Maine, Montana, Missouri have 9 breweries, Vermont has 10 breweries, Arizona has 11 breweries, Minnesota has 12 breweries, Florida, and Ohio have 15 breweries, New York, and Virginia has 16 breweries, Illinois has 18 breweries, North Carolina has 19 breweries, Wisconsin has 20 breweries, Indiana has 22 breweries, Massachusetts and Washington have 23 breweries, Pennsylvania has 25 breweries, Texas has 28 breweries, Oregon has 29 breweries, Michigan has 32 breweries, California has 39 breweries, and Colorado has 47 breweries. 
 
 
 ## Question 2 Merge Data Together
@@ -108,7 +111,6 @@ non_beer_counts <- non_beers %>%
   summarise(Count=n())
 
 ```
-
 
 
 ## Question 3: Address Missing Values  
@@ -542,6 +544,10 @@ beers_and_breweries <- rbind(non_missing_ibu,missing_ibu_all_styles,to_predict_i
 
 ```
 
+
+IBUs are  MAR when we checked by state, brewery and style but we know that each style has a small range of IBU so we imputed the missing IBU's with the median IBU value. There were 5 styles missing so we looked them up and imputed the values. ABVs are MCAR and we decided to impute them with the median ABV of each style because we know that ABV is associated with style. 
+
+
 ## Question 4: Median alcohol content and international bitterness unit for each state
 ```{r}
 # 4.	Compute the median alcohol content and international bitterness unit for each state. 
@@ -573,6 +579,7 @@ print(combined_plot)
 
 ```
 
+The median ABV for states is all around the same value with minimal variation between states except for Utah which is much lower than all the other states. The median IBU's by state has much more variability depending on the state
 
 ## Question 5: Max ABV and Max IBU   
 ```{r}
@@ -619,6 +626,7 @@ print(combined_plot)
 
 ```
 
+The maximum ABV is 0.128 from Colorado and the maximum IBU is in Orgeon with a score of 138. 
 
 ## Question 6: Summary Statistics and Distribution of ABV 
 ```{r}
@@ -705,6 +713,7 @@ high_abv_style <- median_abv_by_style %>% # Barleywine 0.099, Belgian Strong 0.0
 
 ```
 
+The minimum ABV is an American IPA with an ABV of 0.027, the median ABV is 0.056, the maximum ABV is a Quadruple with an ABV of 0.128. The mean ABV is 0.05973 and the Upper Quantile is 0.067 and the lower quantile is 0.05. 
 
 ## Question 7: IBU vs ABV
 ```{r}
@@ -723,6 +732,9 @@ beers_and_breweries %>% ggplot(aes(x = ABV, y = IBU)) +
 
 $$IBU = -23.1 + 1.07*10^3ABV$$
 $$R^2 = 0.35$$ 
+
+
+We can see that with an increase in ABV values, there is an estimated increase in IBU values but we can see as ABV increases, the variability in IBU's increases so the positive correlation between the 2 variables in not strong. 
 
 ## Question 8: KNN Classification Ales vs IPA 
 
@@ -900,6 +912,10 @@ max(specificities) # 90.6%
 ```
 
 
+
+KNN is a good classification model for determining if a beer is an Ale or an IPA because after running 100 different train and test splits we got an accuracy between 86.3% and 92.1%, sensitivity between 89.2% and 95.1%, and specificity between 79.7% and 90.6%. 
+
+
 ## Question 9: Other Investigation
 ```{r}
 # See if Median ABV by Style vs Median IBU by Style has more of a pattern
@@ -955,5 +971,6 @@ ten_alc_beers <- beers_and_breweries %>%
   filter(ABV==0.099)
 # CONCLUSION: No real common states, Total = 34 
 #   IPAs = 12, Stouts = 9, Barleywines = 5, Belgian Strongs = 4
+
 
 ```
