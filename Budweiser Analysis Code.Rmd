@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(plotly)
 library(ggpmisc) # stat_poly_eq
-library(patchwork) # combining plots, # install.packages("patchwork")
+library(patchwork) # combining plots
 library(e1071) # knn
 library(caret) # knn
 library(class) # knn
@@ -136,7 +136,12 @@ ggplot(count_df,aes(x=Category, y=Percent)) +
   ggtitle("Percentage of Oberservations Missing By Variable")+
   geom_text(aes(label = Percent), vjust = -1) + 
   ylim(0,40) +
-  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(color = "#13294b",size = 14),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
+  theme(plot.background = element_rect("#dbdfdf"),
+        axis.text.x = element_text(color = "#13294b",size = 14),
+        axis.text.y = element_text(color = "#13294b",size = 14), 
+        axis.title.x = element_text(color = "#13294b",size = 16), 
+        axis.title.y =element_text(color = "#13294b",size = 16), 
+        plot.title  = element_text(color = "#13294b",size = 18))
 
 ```
 
@@ -163,6 +168,27 @@ tail(beers_and_breweries)
 
 ### Missing ABV
 ```{r}
+
+## Count of Missing ABV vs Non-Missing ABV 
+missing_non_missing_abv = data.frame(beers_and_breweries,is.na(beers_and_breweries$ABV))
+missing_non_missing_abv %>% 
+  group_by(is.na.beers_and_breweries.ABV.) %>%
+  summarise(count = n()) %>% 
+  ggplot(aes(x = as.character(is.na.beers_and_breweries.ABV.), y = count)) + 
+  geom_bar(stat = "identity", color = "#13294b", fill = "#c8102e") +
+  scale_x_discrete(labels=c("Not Missing", "Missing")) +
+  xlab("Missing vs Not Missing") +
+  ylab("Count")+
+  ggtitle("Missing vs Not Missing ABV Values") +
+  ylim(0,2400)+
+  geom_text(aes(label = count),vjust = -1,color = "#13294b") +
+  theme(plot.background = element_rect("#dbdfdf"),
+        axis.text.x = element_text(color = "#13294b",size = 14),
+        axis.text.y = element_text(color = "#13294b",size = 14), 
+        axis.title.x = element_text(color = "#13294b",size = 16), 
+        axis.title.y =element_text(color = "#13294b",size = 16), 
+        plot.title  = element_text(color = "#13294b",size = 18))
+
 # What kind of ABVs are missing?
 missing_abv <- beers_and_breweries %>%
   filter(is.na(ABV))
@@ -171,7 +197,8 @@ missing_abv <- beers_and_breweries %>%
 missing_abv_styles <- missing_abv %>%
   group_by(Style) %>%
   summarise(count=n())
-### SOULD IT BE THE CORRECTED DATA 
+
+
 total_styles <- beers_and_breweries %>%
   group_by(Style) %>%
   summarise(count=n())
@@ -184,7 +211,7 @@ ggplot(style_missing_abv_comparison,aes(x = Style,y = per_missing)) +
   coord_flip() + 
   ggtitle("Percent of Missing ABV's by Style") + 
   labs(y = "Percentage Missing") + 
-  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 14),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
+  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 10),axis.text.y = element_text(color = "#13294b",size = 10), axis.title.x = element_text(color = "#13294b",size = 10), axis.title.y =element_text(color = "#13294b",size = 10), plot.title  = element_text(color = "#13294b",size = 10))
 
 
 
@@ -205,7 +232,7 @@ ggplot(brewery_missing_abv_comparison,aes(x = Brewery_Name,y = per_missing)) +
   coord_flip() + 
   ggtitle("Percentage of Missing ABV's By Brewery") + 
   labs(x = "Brewery Name", y = "Percentage Missing") + 
-  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 14),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
+  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 10),axis.text.y = element_text(color = "#13294b",size = 10), axis.title.x = element_text(color = "#13294b",size = 10), axis.title.y =element_text(color = "#13294b",size = 10), plot.title  = element_text(color = "#13294b",size = 10))
 
 
 # Missing AVB by State 
@@ -224,7 +251,7 @@ ggplot(state_missing_abv_comparison,aes(x = State,y = per_missing)) +
   coord_flip() + 
   ggtitle("Percentage of Missing ABV's By State") + 
     labs(x = "State", y = "Percentage Missing") + 
-  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 14),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
+  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 14),axis.text.y = element_text(color = "#13294b",size = 10), axis.title.x = element_text(color = "#13294b",size = 10), axis.title.y =element_text(color = "#13294b",size = 10), plot.title  = element_text(color = "#13294b",size = 10))
 
 
 # Filtering on the highest counts of styles, then plot to see if they have clear separation for ABV and IBU
@@ -240,17 +267,6 @@ medians_by_popular_style <- beers_and_breweries %>%
 ### ABV is Highly Based on Style 
 
 colors = c("#c8102e","#ffffff","#10297b","#b1b3b3","#690E05")
-# Popular Styles colored by ABV, Histogram
-beers_and_breweries_original %>% filter(Style %in% popular_styles) %>%
-  ggplot(aes(x=ABV,fill=Style)) + ylab('Count') +
-  geom_histogram(color="black") + ggtitle('ABV for Popular Styles') + 
-  theme(plot.background = element_rect("#dbdfdf"),
-        axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 10),
-        axis.text.y = element_text(color = "#13294b",size = 14), 
-        axis.title.x = element_text(color = "#13294b",size = 16), 
-        axis.title.y =element_text(color = "#13294b",size = 16), 
-        plot.title  = element_text(color = "#13294b",size = 18))
-
 
 # Popular Styles colored by ABV, Boxplot
 beers_and_breweries_original %>% filter(Style %in% popular_styles) %>%
@@ -626,7 +642,7 @@ print(combined_plot)
 
 ```
 
-The maximum ABV is 0.128 from Colorado and the maximum IBU is in Orgeon with a score of 138. 
+The maximum ABV is 0.128 from Colorado, Lee Hill Series Vol. 5 - Belgian Style Quadrupel Ale. The maximum IBU is in Orgeon with a score of 138. 
 
 ## Question 6: Summary Statistics and Distribution of ABV 
 ```{r}
@@ -849,8 +865,6 @@ for (seed in 1:100){
   sensitivies[seed] = CM$byClass[1]
   specificities[seed] = CM$byClass[2]
 }
-boxplot(accuracies) # min is ~85 and max ~93, which is really good
-accuracies
 
 # Accuracy histogram for all the Test Train Splits 
 ggplot(data.frame(accuracies), aes(x = accuracies)) + 
@@ -866,11 +880,10 @@ ggplot(data.frame(accuracies), aes(x = accuracies)) +
         plot.title  = element_text(color = "#13294b",size = 18))+
   scale_x_continuous(breaks = scales::pretty_breaks(n = 20))
 
-hist(accuracies)
+
 min(accuracies) # 86.3%, really good minimum accuracy
 max(accuracies) # 92.1%
-boxplot(sensitivies) 
-hist(sensitivies)
+
 
 # Sensitivies histogram for all the Test Train Splits 
 ggplot(data.frame(sensitivies), aes(x = sensitivies)) + 
@@ -889,8 +902,7 @@ ggplot(data.frame(sensitivies), aes(x = sensitivies)) +
 
 min(sensitivies) # 89.2%, really good minimum accuracy
 max(sensitivies) # 95.1%
-boxplot(specificities) 
-hist(specificities)
+
 
 # Specificities histogram for all the Test Train Splits 
 ggplot(data.frame(specificities), aes(x = specificities)) + 
@@ -971,6 +983,58 @@ ten_alc_beers <- beers_and_breweries %>%
   filter(ABV==0.099)
 # CONCLUSION: No real common states, Total = 34 
 #   IPAs = 12, Stouts = 9, Barleywines = 5, Belgian Strongs = 4
+
+
+# Plotting the densities for the top 5 most popular beer styles
+style_counts <- beers_and_breweries %>%
+  group_by(Style) %>%
+  summarize(Count = n())
+popular_styles <- style_counts$Style[style_counts$Count > 100]
+ggplot(beers_and_breweries[beers_and_breweries$Style %in% popular_styles,],aes(x = ABV)) + 
+  geom_density(fill = "#c8102e", color = "#13294b") +
+  ggtitle("Density of ABV for 5 most Popular Styles") + 
+  facet_wrap(~Style,ncol=1) +
+  ylab("Density")+
+  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(color = "#13294b",size = 10),axis.text.y = element_text(color = "#13294b",size = 10), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
+
+# Plotting the densities for the top 5 most popular states
+state_counts <- beers_and_breweries %>%
+  group_by(State) %>%
+  summarize(Count = n()) %>% 
+  arrange(desc(Count))
+popular_states <- state_counts$State[state_counts$Count > 125]
+ggplot(beers_and_breweries[beers_and_breweries$State %in% popular_states,],aes(x = ABV)) + 
+  geom_density(fill = "#c8102e", color = "#13294b") +
+  ggtitle("Top 5 States Density of ABV") + 
+  ylab("Density")+
+  facet_wrap(~State,ncol=1)  +
+  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(color = "#13294b",size = 10),axis.text.y = element_text(color = "#13294b",size = 8), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
+
+# popular styles of beer in Colorado Bar Plot 
+beers_and_breweries %>%
+  group_by(Style) %>% 
+  filter(State == " CO") %>% 
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>% 
+  filter(count > 10) %>% 
+  ggplot(aes(x = Style,y = count)) +
+  geom_bar(stat = "Identity",fill = "#c8102e",color = "#13294b") +
+  xlab("Style")  + 
+  ylab("Count") +
+  ylim(0,45) +
+  ggtitle("Popular Styles in Colorado")+
+  geom_text(aes(label = count), vjust = -1) + 
+  theme(plot.background = element_rect("#dbdfdf"),
+        axis.text.x = element_text(color = "#13294b",size = 12),
+        axis.text.y = element_text(color = "#13294b",size = 14), 
+        axis.title.x = element_text(color = "#13294b",size = 16), 
+        axis.title.y =element_text(color = "#13294b",size = 16), 
+        plot.title  = element_text(color = "#13294b",size = 18))
+
+
+
+
+
 
 
 ```
