@@ -825,6 +825,29 @@ all_styles <- beers_and_breweries %>%
   summarize(Count=n())
 all_styles
 # Conversation is saved as a .txt file
+
+# Plot the counts of IPA vs Ale vs Neither
+Count <- c(607, 1285, 464)
+Category <- c("IPA", "Ale", "Neither")
+count_df <- data.frame(Count, Category)
+count_df$Percent <- round(count_df$Count / 2356 *100,1)
+count_df$Category <- factor(count_df$Category,level=c("IPA", "Ale", "Neither"))
+summary(count_df)
+
+ggplot(count_df,aes(x=Category, y=Percent)) +
+  geom_bar(stat="identity",width=.5,position = "Dodge",fill = "#c8102e",color = "#13294b" ) +
+  xlab("Type")  + 
+  ylab("Percent") +
+  ggtitle("Percentage of Beers as IPA vs Ale")+
+  geom_text(aes(label = Percent), vjust = -1) + 
+  ylim(0,60) +
+  theme(plot.background = element_rect("#dbdfdf"),
+        axis.text.x = element_text(color = "#13294b",size = 14),
+        axis.text.y = element_text(color = "#13294b",size = 14), 
+        axis.title.x = element_text(color = "#13294b",size = 16), 
+        axis.title.y =element_text(color = "#13294b",size = 16), 
+        plot.title  = element_text(color = "#13294b",size = 18))
+
 ```
 
 ### Plots of ABV and IBU by Classification 
