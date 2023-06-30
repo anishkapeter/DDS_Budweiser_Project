@@ -26,7 +26,7 @@ Breweries.csv:
 		City: City where the brewery is located.
 		State: U.S. State where the brewery is located.
 
-  Beers_And_Breweries.csv:
+Beers_And_Breweries.csv:
 
   		Brewery_ID: Brewery id associated with the beer.
 		Beer_Name: Name of the beer.
@@ -42,12 +42,14 @@ Breweries.csv:
 		City: City where the brewery is located.
 		State: U.S. State where the brewery is located.
 
-    Beers_And_Breweries_Cleaned.csv:
+Beers_And_Breweries_Cleaned.csv:
 
   		Brewery_ID: Brewery id associated with the beer.
 		Beer_Name: Name of the beer.
 		Beer_ID: Unique identifier of the beer.
 		ABV: Alcohol by volume of the beer.
+
+  
 		IBU: International Bitterness Units of the beer.
 		Style: Style of the beer. 
 		Ounces: Ounces of beer.
