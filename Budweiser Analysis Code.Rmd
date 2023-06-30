@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ## Introduction 
-Hello, my name is Anishka Peter and my partner is Aaron Abromowitz. Using the beers and breweries data sets that we have been given, we imputed missing values so that we could find various insight such as the beers and breweries by state and style. We will include insights about AVB and IBU as well. 
+Hello, my name is Anishka Peter and my partner is Aaron Abromowitz. We were given two datasets about beers and breweries.  We first cleaned that data and addressed any missing values.  Using that cleaned data, we found various insights such as the beers and breweries by state and style. We will include insights about AVB and IBU as well. 
 
 
 ## Load Packages 
@@ -164,7 +164,7 @@ ggplot(count_df,aes(x=Category, y=Percent)) +
 
 ### Add in the Styles 
 
-We are imputing style for the 5 missing styles 
+We are imputing style for the 5 missing styles, or removing the entries entirely. 
 
 ```{r}
 no_missing_style <- beers_and_breweries %>%
@@ -304,6 +304,8 @@ beers_and_breweries_original %>% filter(Style %in% popular_styles) %>%
 
 
 ### Missing IBU 
+
+We are investigating to see if the missing IBUs have any pattern by State, Brewery, or Style. It looks like certain Breweries have all their beers missing IBUs, where other breweries have none of their beers missing IBUs.
 ```{r}
 # What kind of IBUs are missing?
 missing_ibu <- beers_and_breweries %>%
@@ -470,7 +472,7 @@ beers_and_breweries %>% filter(Style %in% popular_styles) %>%
 
 ```
 
-
+We checked both ABV and IBU by Style to see if it was appropriate to impute the missing values, and if Style could be used in that calculation.
 ```{r}
 # Box plots for the different ABVs and IBUs by style
 # Filter out styles that aren't missing any
@@ -659,7 +661,7 @@ print(combined_plot)
 
 ```
 
-The maximum ABV is 0.128 from Colorado, Lee Hill Series Vol. 5 - Belgian Style Quadrupel Ale. The maximum IBU is in Orgeon with a score of 138. 
+The maximum ABV is 0.128 from Colorado, Lee Hill Series Vol. 5 - Belgian Style Quadrupel Ale. The maximum IBU is in Orgeon with a score of 138, Bitter Bitch Imperial IPA. 
 
 ## Question 6: Summary Statistics and Distribution of ABV 
 ```{r}
@@ -772,6 +774,8 @@ We can see that with an increase in ABV values, there is an estimated increase i
 ## Question 8: KNN Classification Ales vs IPA 
 
 ### Organize IPA vs Ale  
+
+The beers were categorized as IPAs, Ales, or neither.  We determined IPA styles and Ale styles by looking at the data.  These lists of styles were then refined using ChatGPT as well as investigation of styles in the Beer Style Guide.  Some styles were considered to be either, and then we let if the name of the beer had the word "Ale" in it to decide.
 ```{r}
 IPA_Styles <- unique(beers_and_breweries$Style[which(grepl("IPA",beers_and_breweries$Style) | 
                                                        grepl("india pale ale",beers_and_breweries$Style,ignore.case = T) |
@@ -824,6 +828,8 @@ all_styles
 ```
 
 ### Plots of ABV and IBU by Classification 
+
+Plot to see if there is a visual distinction between IBU and/or ABV by IPA vs Ale.  There is a clear distinction for IBU, and a less clear distinction for ABV.
 ```{r}
 # Check if any overlaps, there shouldn't be
 merge(IPA_Beers,Ale_Beers,by="Beer_ID") # 0 rows
@@ -946,6 +952,10 @@ KNN is a good classification model for determining if a beer is an Ale or an IPA
 
 
 ## Question 9: Other Investigation
+
+### See if Median ABV by Style vs Median IBU by Style has a higher Correlation Coefficient
+
+The correlation coefficient between ABV and IBU was only 0.35 for all the data.  However, looking at the top 5 most popular styles, it seemed to have a much stronger correlation. We investigated if this correlation could be determined by looking at median values or by filtering on more popular styles.
 ```{r}
 # See if Median ABV by Style vs Median IBU by Style has more of a pattern
 medians_by_style <- beers_and_breweries %>%
@@ -976,8 +986,14 @@ beers_and_breweries_original %>% filter(Style %in% popular_styles) %>% # R^2 is 
   geom_smooth(method='lm') +
   stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
                formula = y ~ x, parse = TRUE)
+```
 
+It does seem that the correlation becomes higher if you remove non-popular styles (styles with a count less than 40).  It jumps even higher if you only look at the median ABV vs median IBU, instead of looking at values for each individual beer.
 
+### Investigate the bottom right of the ABV vs IBU plot
+
+It seems that the bottom right of the ABV vs IBU plot, ABV is high but IBU is low, is dragging down the average line and lowering the correlation coefficient.  We investigated these values, and determined that there are several styles that are high ABV but low IBU.  None of these styles are very popular, but several styles fall into this category.
+```{r}
 # Use plotly to look at the bottom right hand part of ABV vs IBU plot
 summary(beers_and_breweries$ABV) # Median = 0.056, 3rd Quartile = 0.067
 summary(beers_and_breweries$IBU) # Median = 32, 1st Quartile = 21
@@ -1001,6 +1017,12 @@ ten_alc_beers <- beers_and_breweries %>%
 # CONCLUSION: No real common states, Total = 34 
 #   IPAs = 12, Stouts = 9, Barleywines = 5, Belgian Strongs = 4
 
+```
+
+### Densities for 5 most populare styles and states
+
+We plotted the densities of the 5 most popular styles and states to see how they compared to the overall density.
+```{r}
 
 # Plotting the densities for the top 5 most popular beer styles
 style_counts <- beers_and_breweries %>%
@@ -1026,6 +1048,13 @@ ggplot(beers_and_breweries[beers_and_breweries$State %in% popular_states,],aes(x
   ylab("Density")+
   facet_wrap(~State,ncol=1)  +
   theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(color = "#13294b",size = 10),axis.text.y = element_text(color = "#13294b",size = 8), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
+
+```
+
+### Popular styles in Colardo
+
+We created a bar plot of the most popular beers in Colorado.  Since this was the state with the most beers, we thought it would be useful for Budweiser to know the style breakdown there.  It turned out to be similar to the country as a whole.
+```{r}
 
 # popular styles of beer in Colorado Bar Plot 
 beers_and_breweries %>%
