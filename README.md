@@ -1,8 +1,6 @@
 # DDS_Budweiser_Project
 
-Purpose: 
-
-Perform a data analysis for CEO and CFO of Budewiser on the Beers and Breweries Datasets and presetation of interesting findings from the data. 
+Purpose: Perform a data analysis for CEO and CFO of Budewiser on the Beers and Breweries Datasets and presetation of interesting findings from the data. 
 
 Description of Datasets: The Beers dataset contains a list of 2410 US craft beers and Breweries dataset contains 558 US breweries. The datasets descriptions are as follows.
 
