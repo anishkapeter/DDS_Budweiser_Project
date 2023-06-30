@@ -1,7 +1,7 @@
 ---
 title: "DDS Budweiser Analysis"
-author: "Anishka Peter"
-date: "2023-06-25"
+author: "Anishka Peter and Aaron Abromowitz"
+date: "2023-07-01"
 output: 
   html_document: 
   toc: TRUE
@@ -980,6 +980,7 @@ ten_alc_beers <- beers_and_breweries %>%
 ```
 
 ## Conclusion
+We displayed the breweries by state and found that Colorado had the most breweries. We found each states median ABV and IBU and the maximum ABV and IBU values in the nation. We looked at various summary statistics of ABV for the nation, states with the most beer, top styles. Then we found that there is a weak positive correlation between IBU and ABV and that these 2 variables can be used to classify beers as an Ale vs an IPA.
 
 
 
