@@ -2,7 +2,10 @@
 title: "DDS Budweiser Analysis"
 author: "Anishka Peter"
 date: "2023-06-25"
-output: html_document
+output: 
+  html_document: 
+  toc: TRUE
+  toc_float: true
 ---
 
 ```{r setup, include=FALSE}
@@ -11,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ## Introduction 
-Hello, my name is Anishka Peter and my partner is Aaron Abromowitz. We were given two datasets about beers and breweries.  We first cleaned that data and addressed any missing values.  Using that cleaned data, we found various insights such as the beers and breweries by state and style. We will include insights about AVB and IBU as well. 
+Hello, my name is Anishka Peter and my partner is Aaron Abromowitz. We were given two datasets about beers and breweries and we are excited to present to you our findings. We first cleaned that data and addressed any missing values.  Using that cleaned data, we found various insights such as the beers and breweries by state and style. We will include insights about AVB and IBU as well. 
 
 
 ## Load Packages 
@@ -63,9 +66,11 @@ breweries_by_state %>%
   ggtitle('Breweries by State') + 
   ylab("Number of Breweries")+
   ylim(0,50) +
-  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, color = "#13294b",size = 14),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
+  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, color = "#13294b",size = 10),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
 
 ```
+
+### Question 1 Answer 
 
 How many breweries are present in each state? 
 
@@ -186,7 +191,7 @@ tail(beers_and_breweries)
 
 ### Missing ABV
 
-We plotted the number of Missing ABV vs number of non-missing abv's and then looked to see if there is any pattern in the way ABV is missing, by state, by styles, or by breweries.  
+We plotted the number of Missing ABV vs number of non-missing abv's and then looked to see if there is any pattern in the way ABV is missing, by state, by styles, or by breweries. Then we looked at if ABV values are related to the style 
 ```{r}
 ## Count of Missing ABV vs Non-Missing ABV 
 missing_non_missing_abv = data.frame(beers_and_breweries,is.na(beers_and_breweries$ABV))
@@ -238,7 +243,6 @@ ggplot(style_missing_abv_comparison,aes(x = Style,y = per_missing)) +
 missing_abv_breweries <- missing_abv %>%
   group_by(Brewery_Name) %>%
   summarise(count=n())
-missing_abv_breweries
 total_breweries <- beers_and_breweries %>%
   group_by(Brewery_Name) %>%
   summarise(count=n())
@@ -305,7 +309,7 @@ beers_and_breweries_original %>% filter(Style %in% popular_styles) %>%
 
 ### Missing IBU 
 
-We are investigating to see if the missing IBUs have any pattern by State, Brewery, or Style. It looks like certain Breweries have all their beers missing IBUs, where other breweries have none of their beers missing IBUs.
+We are investigating to see if the missing IBUs have any pattern by State, Brewery, or Style. Then we looked at if IBU values are related to the style of beer. It looks like certain Breweries have all their beers missing IBUs, where other breweries have none of their beers missing IBUs.
 ```{r}
 # What kind of IBUs are missing?
 missing_ibu <- beers_and_breweries %>%
@@ -320,13 +324,9 @@ style_missing_ibu_comparison <- style_missing_ibu_comparison %>%
   mutate(per_missing = 100*count.y/count.x)
 # Hm, some styles, like Cider, don't even have IBUs, maybe leave those as NA
 
+## IBU's Missing By Style
+head(style_missing_ibu_comparison)
 
-ggplot(style_missing_ibu_comparison,aes(x = Style,y = per_missing)) + 
-  geom_bar(stat = "Identity", fill = "#c8102e", color = "#13294b" ) +
-  coord_flip() + 
-  ggtitle("Percent of Missing IBU's by Style") + 
-  labs(y = "Percentage Missing") + 
-  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 0.01),axis.text.y = element_text(color = "#13294b",size = 10), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
 
 
 # Missing IBU by Brewery
@@ -337,49 +337,7 @@ brewery_missing_ibu_comparison <- merge(total_breweries,missing_ibu_breweries,by
 brewery_missing_ibu_comparison <- brewery_missing_ibu_comparison %>% # Lots of breweries are missing IBUs
   mutate(per_missing = 100*count.y/count.x)
 
-ggplot(brewery_missing_ibu_comparison,aes(x = Brewery_Name,y = per_missing)) + 
-  geom_bar(stat = "Identity", fill = "#c8102e", color = "#13294b" ) +
-  coord_flip() + 
-  ggtitle("Percentage of Missing IBU's By Brewery") + 
-  labs(x = "Brewery Name", y = "Percentage Missing") + 
-  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 0.1),axis.text.y = element_text(color = "#13294b",size = 10), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
-
-# A lot of breweries are missing all of their IBU values.
-# Why?  Are these breweries in certain states?  Do they only have a few beers?
-# Create a dataframe with breweries, states, number of total beers, number of beers with IBUs.
-breweries_by_total_beers <- beers_and_breweries %>%
-  group_by(Brewery_id,Brewery_Name,State) %>%
-  summarise(Total_Beers = n())
-beers_with_ibus <- beers_and_breweries %>%
-  filter(!is.na(IBU))
-breweries_by_beers_with_ibu <- beers_with_ibus %>%
-  group_by(Brewery_id) %>%
-  summarise(Total_Beers_with_IBU = n())
-breweries_to_look_at_IBU <- merge(x=breweries_by_total_beers,y=breweries_by_beers_with_ibu, 
-                                  by="Brewery_id", all.x=TRUE)
-breweries_to_look_at_IBU[is.na(breweries_to_look_at_IBU)] <- 0
-breweries_to_look_at_IBU$Perc_Beers_with_IBU <- breweries_to_look_at_IBU$Total_Beers_with_IBU / breweries_to_look_at_IBU$Total_Beers * 100
-breweries_to_look_at_IBU %>% # No real pattern
-  ggplot(aes(x=Total_Beers,y=Perc_Beers_with_IBU)) +
-  geom_point() 
-
-breweries_to_look_at_IBU %>% # No real pattern
-  group_by(Total_Beers) %>%
-  summarise(Avg_Perc_with_IBU = mean(Perc_Beers_with_IBU)) %>%
-  ggplot(aes(x=Total_Beers,y=Avg_Perc_with_IBU)) +
-  geom_point()
-
-breweries_to_look_at_IBU %>% # No real pattern
-  ggplot(aes(x=Perc_Beers_with_IBU,fill=State)) +
-  geom_histogram()
-
-states_by_perc_with_IBU <- breweries_to_look_at_IBU %>% 
-  group_by(State) %>%
-  summarise(Avg_Perc_with_IBU = mean(Perc_Beers_with_IBU)) 
-states_by_perc_with_IBU %>% # no real pattern
-  ggplot(aes(x=State,y=Avg_Perc_with_IBU)) +
-  geom_point()
-# CONCLUSION: It does seem to be pretty random which breweries and beers have an IBU calculated
+head(brewery_missing_ibu_comparison)
 
 
 # Missing IBU by State 
@@ -392,15 +350,9 @@ total_states <- beers_and_breweries %>%
 state_missing_ibu_comparison <- merge(total_states,missing_ibu_states,by="State")
 state_missing_ibu_comparison <- state_missing_ibu_comparison %>% # Lots of breweries are missing IBUs
   mutate(per_missing = 100*count.y/count.x)
+head(state_missing_ibu_comparison)
 
-ggplot(state_missing_ibu_comparison,aes(x = State,y = per_missing)) + 
-  geom_bar(stat = "Identity", fill = "#c8102e", color = "#13294b" ) +
-  coord_flip() + 
-  ggtitle("Percentage of Missing IBU's By State") + 
-    labs(x = "State", y = "Percentage Missing") + 
-  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 10),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
-
-
+# CONCLUSION: It does seem to be pretty random which breweries and beers have an IBU calculated
 
 # Filtering on the highest counts of styles, then plot to see if they have clear separation for ABV and IBU
 style_counts <- beers_and_breweries %>%
@@ -429,28 +381,9 @@ beers_and_breweries %>% filter(Style %in% popular_styles) %>%
         scale_fill_manual(values = colors)
  
 
-t.test(beers_and_breweries$ABV[beers_and_breweries$Style=='American Blonde Ale'],
-       beers_and_breweries$ABV[beers_and_breweries$Style=='American Amber / Red Ale'])
-t.test(beers_and_breweries$ABV[beers_and_breweries$Style=='American Pale Ale (APA)'],
-       beers_and_breweries$ABV[beers_and_breweries$Style=='American Amber / Red Ale'])
-t.test(beers_and_breweries$IBU[beers_and_breweries$Style=='American Blonde Ale'],
-       beers_and_breweries$IBU[beers_and_breweries$Style=='American Amber / Red Ale'])
-t.test(beers_and_breweries$IBU[beers_and_breweries$Style=='American Pale Ale (APA)'],
-       beers_and_breweries$IBU[beers_and_breweries$Style=='American Amber / Red Ale'])
 
+### The IBU's for each beer style seem to be clusered together, so IBU is based on the Style 
 
-### IBU is Highly Based on Style 
-
-# Popular Styles colored by IBU, Histogram
-beers_and_breweries %>% filter(Style %in% popular_styles) %>%
-  ggplot(aes(x=ABV,fill=Style)) + ylab('Count') +
-  geom_histogram(color="black") + ggtitle('ABV for Popular Styles') + 
-  theme(plot.background = element_rect("#dbdfdf"),
-        axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 10),
-        axis.text.y = element_text(color = "#13294b",size = 14), 
-        axis.title.x = element_text(color = "#13294b",size = 16), 
-        axis.title.y =element_text(color = "#13294b",size = 16), 
-        plot.title  = element_text(color = "#13294b",size = 18))
 
 
 # Popular Styles colored by IBU, Boxplot
@@ -472,6 +405,7 @@ beers_and_breweries %>% filter(Style %in% popular_styles) %>%
 
 ```
 
+
 We checked both ABV and IBU by Style to see if it was appropriate to impute the missing values, and if Style could be used in that calculation.
 ```{r}
 # Box plots for the different ABVs and IBUs by style
@@ -486,18 +420,18 @@ missing_styles_abv %>%
   geom_boxplot(fill = "#c8102e", color = "#13294b") + 
   facet_wrap(~Style) + 
   ggtitle("Median ABV by Style") + 
-  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 10),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
+  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 10),axis.text.y = element_blank(), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18), axis.ticks.y = element_blank())
 
 no_ibu <- beers_and_breweries[is.na(beers_and_breweries$IBU), ]
 missing_styles_ibu_list <- unique(no_ibu$Style)
-missing_styles_ibu <- beers_and_breweries[beers_and_breweries$Style %in% missing_styles_ibu_list,]
+missing_styles_ibu <- beers_and_breweries[beers_and_breweries$Style %in% missing_styles_ibu_list ,]
 
 missing_styles_ibu %>% 
   ggplot(aes(x=IBU)) + 
   geom_boxplot(fill = "#c8102e", color = "#13294b") + 
   facet_wrap(~Style) + 
   ggtitle("Median ABV by Style") +
-  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 10),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
+  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 10),axis.text.y = element_blank(), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18), axis.ticks.y = element_blank())
 
 ## remove the styles that have a missing number of IBU is less than 20 
 missing_styles_ibu_count <- missing_styles_ibu %>%
@@ -510,13 +444,15 @@ missing_styles_ibu %>% filter(!(Style %in% small_count)) %>%
   geom_boxplot(fill = "#c8102e", color = "#13294b") + 
   facet_wrap(~Style) + 
   ggtitle("Median ABV by Style") +
-  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 10),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
+  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 10),axis.text.y = element_blank(), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18),axis.ticks.y = element_blank())
 ## it seems like there is a small range of IBU values based on the style so we will impute with median IBU value
 ```
 
 ### Impute Missing ABV and IBU Values 
 
 ####  Impute Missing Values for ABV 
+
+ABVs are MCAR and we decided to impute them with the median ABV of each style because saw that ABV is associated with style.
 ```{r}
 missing_abv <- beers_and_breweries %>% 
   filter(is.na(ABV)) # 60
@@ -542,6 +478,9 @@ head(beers_and_breweries)
 
 
 #### Impute  Missing IBU 
+
+IBUs are  MAR when we checked by state, brewery and style and we observed that each style has a small range of IBU so we are imputing the missing IBU's with the median IBU value. 
+
 ```{r}
 missing_ibu <- beers_and_breweries %>% 
   filter(is.na(IBU)) # 1003
@@ -580,13 +519,12 @@ beers_and_breweries <- rbind(non_missing_ibu,missing_ibu_all_styles,to_predict_i
 ```
 
 
-IBUs are  MAR when we checked by state, brewery and style but we know that each style has a small range of IBU so we imputed the missing IBU's with the median IBU value. There were 5 styles missing so we looked them up and imputed the values. ABVs are MCAR and we decided to impute them with the median ABV of each style because we know that ABV is associated with style. 
-
-
 ## Question 4: Median alcohol content and international bitterness unit for each state
+
+We grouped the IBU and ABV by state and computed the medians. Then plotted the median ABV by state and median IBU by state
+
 ```{r}
-# 4.	Compute the median alcohol content and international bitterness unit for each state. 
-#  Plot a bar chart to compare.
+
 medians_by_state <- beers_and_breweries %>%
   group_by(State) %>%
   summarise(median_abv=median(ABV),median_ibu=median(IBU))
@@ -596,30 +534,29 @@ median_abv_by_state <- beers_and_breweries %>%
   group_by(State) %>%
   summarise(Median=median(ABV))
 
-
-
-
 plot1 <- ggplot(medians_by_state,aes(x = State, y = median_abv)) +
   geom_bar(stat = "Identity", color = "#13294b", fill = "#c8102e") +
   labs(x = "State", y = "Median ABV", title = "Median ABV by State") +
   ylim(0,0.08) +
-  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, color = "#13294b",size = 14),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
+  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, color = "#13294b",size = 10),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
 plot2 <- ggplot(medians_by_state,aes(x = State, y = median_ibu)) +
   geom_bar(stat= "Identity", fill = "#13294b", color = "#c8102e") +
   labs(x = "State", y = "Median IBU", title = "Median IBU by State") +
   ylim(0,75) +
-  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, color = "#13294b",size = 14),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
+  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, color = "#13294b",size = 10),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
 combined_plot <- plot1 / plot2 + plot_layout(ncol = 1)
 print(combined_plot)
 
 ```
 
+### Question 4 Answer 
 The median ABV for states is all around the same value with minimal variation between states except for Utah which is much lower than all the other states. The median IBU's by state has much more variability depending on the state
 
 ## Question 5: Max ABV and Max IBU   
+
+We found the max ABV and IBU value. Then we plotted on a bar graph the states with the 10 highest IBU scores and the 10 highest ABV value.
 ```{r}
-# 5.	Which state has the maximum alcoholic (ABV) beer? 
-#     Which state has the most bitter (IBU) beer?
+
 max_abv_state <- beers_and_breweries$State[beers_and_breweries$ABV == max(beers_and_breweries$ABV)]
 max_ibu_state <- beers_and_breweries$State[beers_and_breweries$IBU == max(beers_and_breweries$IBU)]
 
@@ -661,11 +598,14 @@ print(combined_plot)
 
 ```
 
+### Question 5 Answer 
 The maximum ABV is 0.128 from Colorado, Lee Hill Series Vol. 5 - Belgian Style Quadrupel Ale. The maximum IBU is in Orgeon with a score of 138, Bitter Bitch Imperial IPA. 
 
 ## Question 6: Summary Statistics and Distribution of ABV 
+
+We found the summary statistics of the ABV values and then plotted a density plot and boxplot for ABV's distribution.
 ```{r}
-# 6.	Comment on the summary statistics and distribution of the ABV variable.
+
 summary(beers_and_breweries$ABV) 
 #    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 # 0.02700 0.05000 0.05600 0.05973 0.06700 0.12800 
@@ -674,29 +614,6 @@ summary(beers_and_breweries$ABV)
 ggplot(beers_and_breweries,aes(x = ABV)) + 
   geom_density(fill = "#c8102e", color = "#13294b") +
   ggtitle("Density of ABV") + 
-  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, color = "#13294b",size = 14),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
-
-
-# Plotting the densities for the top 5 most popular beer styles
-style_counts <- beers_and_breweries %>%
-  group_by(Style) %>%
-  summarize(Count = n())
-popular_styles <- style_counts$Style[style_counts$Count > 100]
-ggplot(beers_and_breweries[beers_and_breweries$Style %in% popular_styles,],aes(x = ABV)) + 
-  geom_density(fill = "#c8102e", color = "#13294b") +
-  ggtitle("Density of ABV") + 
-  facet_wrap(~Style,ncol=1) +
-  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, color = "#13294b",size = 14),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
-
-# Plotting the densities for the top 5 most popular states
-state_counts <- beers_and_breweries %>%
-  group_by(State) %>%
-  summarize(Count = n())
-popular_states <- state_counts$State[state_counts$Count > 125]
-ggplot(beers_and_breweries[beers_and_breweries$State %in% popular_states,],aes(x = ABV)) + 
-  geom_density(fill = "#c8102e", color = "#13294b") +
-  ggtitle("Density of ABV") + 
-  facet_wrap(~State,ncol=1) +
   theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, color = "#13294b",size = 14),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
 
 
@@ -714,52 +631,21 @@ ggplot(beers_and_breweries,aes(x = ABV)) +
         axis.ticks.x = element_blank())
 
 
-min_abv <- beers_and_breweries[beers_and_breweries$ABV == min(beers_and_breweries$ABV),]
-# American IPA        174 Bikini Beer    1286 0.027  41     12 Evil Twin Brewing Brooklyn    NY
-max_abv <- beers_and_breweries[beers_and_breweries$ABV == max(beers_and_breweries$ABV),]
-# Quadrupel (Quad)  52 Lee Hill Series Vol. 5 - Belgian Style Quadrupel Ale  0.128  51 19.2 Upslope Brewing Company Boulder CO
-mean_abv <- beers_and_breweries[beers_and_breweries$ABV == 0.05973,]
-# None 
-med_abv <- beers_and_breweries[beers_and_breweries$ABV == 0.05600,]
-
-lowerquant <- beers_and_breweries[beers_and_breweries$ABV == 0.05000,]
-# 217 observations at the lower quantile value 
-upperquant <- beers_and_breweries[beers_and_breweries$ABV == 0.06700,]
-# 26 observations at the upper quantile value 
-
-
-median_abv_by_style <- beers_and_breweries %>%
-  group_by(Style) %>%
-  summarise(Median=median(ABV))
-median_abv_by_style
-
-low_abv_style <- median_abv_by_style %>% # NONE
-  filter(Median < 0.05 - 0.01)
-first_quartile_style <- median_abv_by_style %>% # Hefeweizen, Pilsner, American Pale Lager 0.5
-  filter(Median > 0.05 - 0.001 & Median < 0.05 + 0.001)
-median_style <- median_abv_by_style %>% # Red Ale 0.056, Stout 0.057
-  filter(Median > 0.0565 - 0.001 & Median < 0.0565 + 0.001)
-third_quartile_style <- median_abv_by_style %>% # Belgian Dark Ale 0.067
-  filter(Median > 0.067 - 0.001 & Median < 0.067 + 0.001)
-high_abv_style <- median_abv_by_style %>% # Barleywine 0.099, Belgian Strong 0.08
-  filter(Median > 0.067 + 0.01)
-
-
-
 ```
 
+### Question 6 Answer 
 The minimum ABV is an American IPA with an ABV of 0.027, the median ABV is 0.056, the maximum ABV is a Quadruple with an ABV of 0.128. The mean ABV is 0.05973 and the Upper Quantile is 0.067 and the lower quantile is 0.05. 
 
 ## Question 7: IBU vs ABV
+
+We plotted a scatter plot of IBU vs ABV values 
 ```{r}
-# 7.	Is there an apparent relationship between the bitterness of the beer and its alcoholic content? 
-#     Draw a scatter plot.  Make your best judgment of a relationship and EXPLAIN your answer.
 
 ## scatter plot with linear regression on data with imputed values 
 beers_and_breweries %>% ggplot(aes(x = ABV, y = IBU)) +
     geom_smooth(method='lm', color = "#13294b") +
   geom_point(color = "#c8102e", size = 2) + 
-  ggtitle("ABV vs IBU") + 
+  ggtitle("IBU vs ABV") + 
   theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1, color = "#13294b",size = 14),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
 
 
@@ -768,7 +654,7 @@ beers_and_breweries %>% ggplot(aes(x = ABV, y = IBU)) +
 $$IBU = -23.1 + 1.07*10^3ABV$$
 $$R^2 = 0.35$$ 
 
-
+### Question 7 Answer 
 We can see that with an increase in ABV values, there is an estimated increase in IBU values but we can see as ABV increases, the variability in IBU's increases so the positive correlation between the 2 variables in not strong. 
 
 ## Question 8: KNN Classification Ales vs IPA 
@@ -874,23 +760,13 @@ IPAs_and_Ales %>% # Looks like IPAs have higher IBUs
         legend.title = element_text(color = "#13294b",size=15)) + 
   scale_fill_manual(values = colors, name = "Classification")  
 
-  
 
-# ABV by Classification Boxplot
-IPAs_and_Ales %>% # Looks like IPAs have higher ABV as well
-  ggplot(aes(x=ABV)) +
-  geom_boxplot() +
-  facet_wrap(~IPA_or_Ale,ncol=1)
-
-# IBU by Classification Boxplot
-IPAs_and_Ales %>% 
-  ggplot(aes(x=IBU)) +
-  geom_boxplot() +
-  facet_wrap(~IPA_or_Ale,ncol=1)
 ```
 
 
 ### KNN Predictor
+
+We ran 100 train test splits and plotted histograms of the specificity, sensitivity, and accuracy of all of the splits. 
 ```{r}
 # First, try with just K = 5 for 100 train and test splits 70 30 split
 num_seeds <- 100
@@ -970,13 +846,74 @@ max(specificities) # 90.6%
 ```
 
 
-
+### Quesiton 8 Answer
 KNN is a good classification model for determining if a beer is an Ale or an IPA because after running 100 different train and test splits we got an accuracy between 86.3% and 92.1%, sensitivity between 89.2% and 95.1%, and specificity between 79.7% and 90.6%. 
 
 
 ## Question 9: Other Investigation
 
-### See if Median ABV by Style vs Median IBU by Style has a higher Correlation Coefficient
+### Densities for 5 most populare styles and states
+
+We plotted the densities of the 5 most popular styles and states to see how they compared to the overall density.
+```{r}
+
+# Plotting the densities for the top 5 most popular beer styles
+style_counts <- beers_and_breweries %>%
+  group_by(Style) %>%
+  summarize(Count = n())
+popular_styles <- style_counts$Style[style_counts$Count > 100]
+ggplot(beers_and_breweries[beers_and_breweries$Style %in% popular_styles,],aes(x = ABV)) + 
+  geom_density(fill = "#c8102e", color = "#13294b") +
+  ggtitle("Density of ABV for 5 most Popular Styles") + 
+  facet_wrap(~Style,ncol=1) +
+  ylab("Density")+
+  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(color = "#13294b",size = 10),axis.text.y = element_text(color = "#13294b",size = 10), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
+
+# Plotting the densities for the top 5 most popular states
+state_counts <- beers_and_breweries %>%
+  group_by(State) %>%
+  summarize(Count = n()) %>% 
+  arrange(desc(Count))
+popular_states <- state_counts$State[state_counts$Count > 125]
+ggplot(beers_and_breweries[beers_and_breweries$State %in% popular_states,],aes(x = ABV)) + 
+  geom_density(fill = "#c8102e", color = "#13294b") +
+  ggtitle("Top 5 States Density of ABV") + 
+  ylab("Density")+
+  facet_wrap(~State,ncol=1)  +
+  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(color = "#13294b",size = 10),axis.text.y = element_text(color = "#13294b",size = 8), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
+
+```
+
+### Popular styles in Colorado
+
+We created a bar plot of the most popular beers in Colorado.  Since this was the state with the most beers, we thought it would be useful for Budweiser to know the style breakdown there so that they know what types of beers to market in a location where beer is the most popular.  It turned out to be similar to the country as a whole.
+```{r}
+
+# popular styles of beer in Colorado Bar Plot 
+beers_and_breweries %>%
+  group_by(Style) %>% 
+  filter(State == " CO") %>% 
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>% 
+  filter(count > 10) %>% 
+  ggplot(aes(x = Style,y = count)) +
+  geom_bar(stat = "Identity",fill = "#c8102e",color = "#13294b") +
+  xlab("Style")  + 
+  ylab("Count") +
+  ylim(0,45) +
+  ggtitle("Popular Styles in Colorado")+
+  geom_text(aes(label = count), vjust = -1) + 
+  theme(plot.background = element_rect("#dbdfdf"),
+        axis.text.x = element_text(color = "#13294b",size = 12),
+        axis.text.y = element_text(color = "#13294b",size = 14), 
+        axis.title.x = element_text(color = "#13294b",size = 16), 
+        axis.title.y =element_text(color = "#13294b",size = 16), 
+        plot.title  = element_text(color = "#13294b",size = 18))
+```
+
+### Extra Analysis 
+
+#### See if Median ABV by Style vs Median IBU by Style has a higher Correlation Coefficient
 
 The correlation coefficient between ABV and IBU was only 0.35 for all the data.  However, looking at the top 5 most popular styles, it seemed to have a much stronger correlation. We investigated if this correlation could be determined by looking at median values or by filtering on more popular styles.
 ```{r}
@@ -1013,7 +950,7 @@ beers_and_breweries_original %>% filter(Style %in% popular_styles) %>% # R^2 is 
 
 It does seem that the correlation becomes higher if you remove non-popular styles (styles with a count less than 40).  It jumps even higher if you only look at the median ABV vs median IBU, instead of looking at values for each individual beer.
 
-### Investigate the bottom right of the ABV vs IBU plot
+#### Investigate the bottom right of the ABV vs IBU plot
 
 It seems that the bottom right of the ABV vs IBU plot, ABV is high but IBU is low, is dragging down the average line and lowering the correlation coefficient.  We investigated these values, and determined that there are several styles that are high ABV but low IBU.  None of these styles are very popular, but several styles fall into this category.
 ```{r}
@@ -1042,68 +979,7 @@ ten_alc_beers <- beers_and_breweries %>%
 
 ```
 
-### Densities for 5 most populare styles and states
-
-We plotted the densities of the 5 most popular styles and states to see how they compared to the overall density.
-```{r}
-
-# Plotting the densities for the top 5 most popular beer styles
-style_counts <- beers_and_breweries %>%
-  group_by(Style) %>%
-  summarize(Count = n())
-popular_styles <- style_counts$Style[style_counts$Count > 100]
-ggplot(beers_and_breweries[beers_and_breweries$Style %in% popular_styles,],aes(x = ABV)) + 
-  geom_density(fill = "#c8102e", color = "#13294b") +
-  ggtitle("Density of ABV for 5 most Popular Styles") + 
-  facet_wrap(~Style,ncol=1) +
-  ylab("Density")+
-  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(color = "#13294b",size = 10),axis.text.y = element_text(color = "#13294b",size = 10), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
-
-# Plotting the densities for the top 5 most popular states
-state_counts <- beers_and_breweries %>%
-  group_by(State) %>%
-  summarize(Count = n()) %>% 
-  arrange(desc(Count))
-popular_states <- state_counts$State[state_counts$Count > 125]
-ggplot(beers_and_breweries[beers_and_breweries$State %in% popular_states,],aes(x = ABV)) + 
-  geom_density(fill = "#c8102e", color = "#13294b") +
-  ggtitle("Top 5 States Density of ABV") + 
-  ylab("Density")+
-  facet_wrap(~State,ncol=1)  +
-  theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(color = "#13294b",size = 10),axis.text.y = element_text(color = "#13294b",size = 8), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
-
-```
-
-### Popular styles in Colardo
-
-We created a bar plot of the most popular beers in Colorado.  Since this was the state with the most beers, we thought it would be useful for Budweiser to know the style breakdown there.  It turned out to be similar to the country as a whole.
-```{r}
-
-# popular styles of beer in Colorado Bar Plot 
-beers_and_breweries %>%
-  group_by(Style) %>% 
-  filter(State == " CO") %>% 
-  summarise(count = n()) %>%
-  arrange(desc(count)) %>% 
-  filter(count > 10) %>% 
-  ggplot(aes(x = Style,y = count)) +
-  geom_bar(stat = "Identity",fill = "#c8102e",color = "#13294b") +
-  xlab("Style")  + 
-  ylab("Count") +
-  ylim(0,45) +
-  ggtitle("Popular Styles in Colorado")+
-  geom_text(aes(label = count), vjust = -1) + 
-  theme(plot.background = element_rect("#dbdfdf"),
-        axis.text.x = element_text(color = "#13294b",size = 12),
-        axis.text.y = element_text(color = "#13294b",size = 14), 
-        axis.title.x = element_text(color = "#13294b",size = 16), 
-        axis.title.y =element_text(color = "#13294b",size = 16), 
-        plot.title  = element_text(color = "#13294b",size = 18))
+## Conclusion
 
 
 
-
-
-
-
-```
