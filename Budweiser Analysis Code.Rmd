@@ -10,6 +10,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
+## Introduction 
+Hello, my name is Anishka Peter and my partner is Aaron Abromowitz. Using the beers and breweries data sets that we have been given, we imputed missing values so that we could find various insight such as the beers and breweries by state and style. We will include insights about AVB and IBU as well. 
+
 
 ## Load Packages 
 ```{r}
@@ -29,8 +32,8 @@ library(dplyr)
 
 
 ## Load Datasets 
+We are loading in both data sets that we were given. 
 ```{r}
-# Code to run at the beginning
 breweries <- read.csv("https://raw.githubusercontent.com/BivinSadler/MSDS_6306_Doing-Data-Science/Master/Unit%208%20and%209%20Case%20Study%201/Breweries.csv",header=TRUE)
 beers <- read.csv("https://raw.githubusercontent.com/BivinSadler/MSDS_6306_Doing-Data-Science/Master/Unit%208%20and%209%20Case%20Study%201/Beers.csv",header=TRUE)
 
@@ -38,6 +41,9 @@ beers <- read.csv("https://raw.githubusercontent.com/BivinSadler/MSDS_6306_Doing
 
 
 ## Question 1: Breweries by State 
+
+We are grouping all the breweries by state and then plotting a bar plot with the counts for the states.
+
 ```{r}
 head(breweries)
 dim(breweries) # 558 4
@@ -60,6 +66,7 @@ breweries_by_state %>%
   theme(plot.background = element_rect("#dbdfdf"),axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, color = "#13294b",size = 14),axis.text.y = element_text(color = "#13294b",size = 14), axis.title.x = element_text(color = "#13294b",size = 16), axis.title.y =element_text(color = "#13294b",size = 16), plot.title  = element_text(color = "#13294b",size = 18))
 
 ```
+
 How many breweries are present in each state? 
 
 DC, North Dakota, South Dakota, and West Virginia have 1 brewery, Arkansas, Delaware, Massachusetts, and Nevada have 2 breweries, Alabama, Kansas, New Hampshire, New Jersey, and Tennessee have 3 breweries, Hawaii, Kentucky, Utah, New Mexico, South Carolina, and Wyoming have 4 breweries, Iowa, Idaho, Louisiana, Nebraska, and Rhode Island have 5 breweries, Oklahoma has 6 breweries, Alaska, Georgia, and Maryland have 7 breweries, Connecticut has 8 breweries, Maine, Montana, Missouri have 9 breweries, Vermont has 10 breweries, Arizona has 11 breweries, Minnesota has 12 breweries, Florida, and Ohio have 15 breweries, New York, and Virginia has 16 breweries, Illinois has 18 breweries, North Carolina has 19 breweries, Wisconsin has 20 breweries, Indiana has 22 breweries, Massachusetts and Washington have 23 breweries, Pennsylvania has 25 breweries, Texas has 28 breweries, Oregon has 29 breweries, Michigan has 32 breweries, California has 39 breweries, and Colorado has 47 breweries. 
@@ -68,9 +75,10 @@ DC, North Dakota, South Dakota, and West Virginia have 1 brewery, Arkansas, Dela
 ## Question 2 Merge Data Together
 
 ### Merge Beers and Breweries 
+
+We merged the beers and breweries data set by the Brewery_id and Brew_ID and printed the first 6 and last 6 of the dataframe. 
+
 ```{r}
-# 2.	Merge beer data with the breweries data. 
-# Print the first 6 observations and the last six observations to check the merged file. 
 beers_and_breweries <- merge(x=beers, y=breweries, by.x="Brewery_id", by.y="Brew_ID")
 
 beers_and_breweries <- rename(beers_and_breweries,Brewery_Name="Name.y")
@@ -81,10 +89,12 @@ beers_and_breweries_original <- beers_and_breweries
 
 head(beers_and_breweries,6)
 tail(beers_and_breweries,6)
-
 ```
 
 ### Remove non-beer styles 
+
+Some of the beers in the data set, are not considered real beers so we removed them. 
+
 ```{r}
 beers_and_breweries <- beers_and_breweries[beers_and_breweries$Style != "American Malt Liquor", ] # not a beer
 beers_and_breweries <- beers_and_breweries[beers_and_breweries$Style != "Braggot", ] # not a beer
@@ -97,6 +107,9 @@ beers_and_breweries <- beers_and_breweries[beers_and_breweries$Style != "Shandy"
 ```
 
 ### Counts for non-beers styles
+
+We created a table that gives the number of observations we have that we did not consider as beers.
+
 ```{r}
 malt_liquor <- beers_and_breweries[beers_and_breweries$Style == "American Malt Liquor", ] # not a beer
 braggot <- beers_and_breweries[beers_and_breweries$Style == "Braggot", ] # not a beer
@@ -114,6 +127,9 @@ non_beer_counts <- non_beers %>%
 
 
 ## Question 3: Address Missing Values  
+
+We plotted the percentage of values that are missing for the 3 variables that have missing values.  
+
 ```{r}
 dim(beers_and_breweries %>% filter(is.na(ABV) & !is.na(IBU)))[1] # No results, ABV is missing only if IBU is missing as well
 dim(beers_and_breweries %>% filter(Style==''))[1] # 5 results, 2 with ABV and IBU, 3 with  neither = 0.2%
@@ -142,12 +158,14 @@ ggplot(count_df,aes(x=Category, y=Percent)) +
         axis.title.x = element_text(color = "#13294b",size = 16), 
         axis.title.y =element_text(color = "#13294b",size = 16), 
         plot.title  = element_text(color = "#13294b",size = 18))
-
 ```
 
 
 
 ### Add in the Styles 
+
+We are imputing style for the 5 missing styles 
+
 ```{r}
 no_missing_style <- beers_and_breweries %>%
   filter(Style != '' ) # 2405
@@ -167,8 +185,9 @@ tail(beers_and_breweries)
 
 
 ### Missing ABV
-```{r}
 
+We plotted the number of Missing ABV vs number of non-missing abv's and then looked to see if there is any pattern in the way ABV is missing, by state, by styles, or by breweries.  
+```{r}
 ## Count of Missing ABV vs Non-Missing ABV 
 missing_non_missing_abv = data.frame(beers_and_breweries,is.na(beers_and_breweries$ABV))
 missing_non_missing_abv %>% 
@@ -280,8 +299,6 @@ beers_and_breweries_original %>% filter(Style %in% popular_styles) %>%
         plot.title  = element_text(color = "#13294b",size = 18),
         axis.ticks.y= element_blank()) +
         scale_fill_manual(values = colors)
-
-
 
 ```
 
